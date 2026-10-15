@@ -1,0 +1,827 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>90-Day Outreach Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; }
+[hidden] { display: none !important; }
+img { max-width: 100%; }
+/* Layout: a job-card style desk. Bottom tab bar on phones, side rail on laptops; one column of cards in between. */
+:root {
+  --bg: #ebeeef;
+  --panel: #f8fafa;
+  --ink: #14202a;
+  --muted: #566672;
+  --line: #d2d9dd;
+  --accent: #0a6b63;
+  --accent-ink: #ffffff;
+  --accent-soft: #d3eae6;
+  --good: #1e7a3e;
+  --good-soft: #daeedf;
+  --warn: #9a5b00;
+  --warn-soft: #f5e6c8;
+  --bad: #b3321f;
+  --bad-soft: #f6d9d3;
+  --info: #2d5c8e;
+  --info-soft: #dce6f1;
+  --f-display: 'Archivo', 'Arial Narrow', system-ui, sans-serif;
+  --f-body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1418; --panel: #162026; --ink: #e6edf0; --muted: #93a4ae; --line: #2a3942;
+    --accent: #4cc3b3; --accent-ink: #05201c; --accent-soft: #113936;
+    --good: #6fcf8c; --good-soft: #173626; --warn: #e3b04b; --warn-soft: #3a2e12;
+    --bad: #f08a78; --bad-soft: #3e1c17; --info: #8db7e8; --info-soft: #1b2b3d;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1418; --panel: #162026; --ink: #e6edf0; --muted: #93a4ae; --line: #2a3942;
+  --accent: #4cc3b3; --accent-ink: #05201c; --accent-soft: #113936;
+  --good: #6fcf8c; --good-soft: #173626; --warn: #e3b04b; --warn-soft: #3a2e12;
+  --bad: #f08a78; --bad-soft: #3e1c17; --info: #8db7e8; --info-soft: #1b2b3d;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.45; }
+h1, h2, h3 { font-family: var(--f-display); margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+p { margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+input, select, textarea { font-size: 16px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.muted { color: var(--muted); }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.pad { padding: 24px 0; }
+
+/* shell */
+.app { display: grid; grid-template-columns: minmax(0, 1fr); padding-inline: 16px; padding-block: 18px; max-width: 1120px; margin: 0 auto; }
+.col { min-width: 0; display: flex; flex-direction: column; gap: 16px; padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; background: var(--panel); border-top: 1px solid var(--line); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
+nav button { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; background: none; border: 0; padding: 6px 2px; border-radius: 8px; color: var(--muted); font-size: 11.5px; font-weight: 500; cursor: pointer; }
+nav button svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+nav button[aria-current="page"] { color: var(--accent); background: var(--accent-soft); }
+.top { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.top h1 { font-size: 22px; font-weight: 800; }
+.top .sub { font-size: 13px; color: var(--muted); }
+.pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.pill { font-family: var(--f-mono); font-size: 12px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); white-space: nowrap; }
+.pill.ok { color: var(--good); border-color: var(--good); }
+.pill.err { color: var(--bad); border-color: var(--bad); }
+.pill.dim { color: var(--muted); }
+@media (min-width: 900px) {
+  .app { grid-template-columns: 188px minmax(0, 1fr); gap: 36px; padding-block: 28px; }
+  nav { position: sticky; top: 28px; align-self: start; flex-direction: column; border: 0; background: transparent; padding: 0; gap: 4px; }
+  nav button { flex-direction: row; justify-content: flex-start; gap: 10px; padding: 10px 12px; font-size: 14px; }
+  .col { padding-bottom: 40px; }
+}
+
+/* cards and rows */
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.card h2 { font-size: 16px; font-weight: 700; }
+.card .lbl, .lbl { font-family: var(--f-mono); font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.vh { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.vh h2 { font-size: 20px; font-weight: 800; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 16px; }
+
+.btn { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 9px 14px; min-height: 40px; cursor: pointer; font-weight: 500; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.btn.small { min-height: 34px; padding: 5px 10px; font-size: 13.5px; }
+.btn.danger { color: var(--bad); border-color: var(--bad); }
+.btn.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+input[type="text"], input[type="password"], input[type="search"], input[type="date"], input[type="number"], select, textarea { width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; min-height: 42px; }
+textarea { resize: vertical; min-height: 90px; }
+label.f { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); min-width: 0; }
+.fgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 12px; }
+
+/* today */
+.floor { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.bignum { font-family: var(--f-mono); font-size: 44px; line-height: 1; font-weight: 500; }
+.bignum small { font-size: 18px; color: var(--muted); }
+.bar-track { height: 10px; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; flex: 1 1 140px; min-width: 120px; }
+.bar-fill { height: 100%; background: var(--accent); }
+.bar-fill.met { background: var(--good); }
+.counter { display: flex; gap: 8px; }
+.counter .btn { min-width: 52px; font-family: var(--f-mono); font-size: 18px; }
+.strip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.dstrip { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; border-radius: 8px; }
+.dstrip.is-today { background: var(--accent-soft); }
+.dl, .dm { font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.dot { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--line); display: grid; place-items: center; font-family: var(--f-mono); font-size: 13px; }
+.dot.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+.item:first-of-type { border-top: 0; }
+.item .t { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.item .t strong { font-weight: 600; overflow-wrap: anywhere; }
+.late { color: var(--bad); }
+.empty { color: var(--muted); padding: 6px 0; }
+
+/* pipeline */
+.chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
+.chips button { flex: none; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.chips button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.chips .n { font-family: var(--f-mono); opacity: 0.8; margin-left: 4px; }
+.contact { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 10px 16px; justify-content: space-between; align-items: center; }
+.cmain { min-width: 0; flex: 1 1 220px; display: flex; flex-direction: column; gap: 2px; }
+.ctitle { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.ctitle strong { font-family: var(--f-display); font-size: 16px; font-weight: 700; overflow-wrap: anywhere; }
+.csub, .cnext { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.cside { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.cside select { width: auto; min-height: 34px; padding: 4px 8px; font-size: 14px; }
+.tier { font-family: var(--f-mono); font-size: 11.5px; padding: 1px 7px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); }
+.tier.A { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+.tone-good { background: var(--good-soft); color: var(--good); }
+.tone-warn { background: var(--warn-soft); color: var(--warn); }
+.tone-bad { background: var(--bad-soft); color: var(--bad); }
+.tone-info { background: var(--info-soft); color: var(--info); }
+.tone-accent { background: var(--accent-soft); color: var(--accent); }
+.st { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+
+/* tasks */
+.tasklist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.task { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.task:first-child { border-top: 0; }
+.check { flex: none; width: 26px; height: 26px; border-radius: 7px; border: 1.8px solid var(--muted); background: var(--bg); cursor: pointer; position: relative; padding: 0; }
+.check[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); }
+.check[aria-pressed="true"]::after { content: ''; position: absolute; left: 7px; top: 3px; width: 6px; height: 12px; border: solid var(--accent-ink); border-width: 0 2.2px 2.2px 0; transform: rotate(40deg); }
+.tmain { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.ttitle { overflow-wrap: anywhere; }
+.task.done .ttitle { text-decoration: line-through; color: var(--muted); }
+.tmeta { display: flex; gap: 8px; align-items: center; font-size: 12.5px; color: var(--muted); flex-wrap: wrap; }
+.tag { font-family: var(--f-mono); font-size: 11.5px; padding: 0 6px; border: 1px solid var(--line); border-radius: 4px; }
+.x { background: none; border: 0; color: var(--muted); font-size: 22px; line-height: 1; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+.x:hover { color: var(--bad); }
+.addrow { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+@media (min-width: 640px) { .addrow { grid-template-columns: minmax(0, 1fr) 150px 150px auto; } }
+details summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
+
+/* progress */
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 480px; }
+th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); font-size: 14px; vertical-align: top; }
+th { font-family: var(--f-mono); font-size: 11.5px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+td.num, th.num { text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+td small { display: block; font-size: 12px; font-family: var(--f-mono); }
+.got-good { color: var(--good); }
+.got-bad { color: var(--bad); }
+.note { background: var(--info-soft); color: var(--ink); border-radius: 8px; padding: 10px 12px; font-size: 14px; }
+svg.chart { width: 100%; max-width: 560px; height: auto; display: block; }
+.chart .bar { fill: var(--accent); }
+.chart .bar0 { fill: var(--line); }
+.chart .ax { fill: var(--muted); font: 10px var(--f-mono); }
+.chart .val { fill: var(--ink); font: 10px var(--f-mono); }
+.chart .goal { stroke: var(--warn); stroke-width: 1.2; stroke-dasharray: 4 3; }
+.chart .axis { stroke: var(--line); stroke-width: 1; }
+
+/* sheet and toast */
+.sheet { position: fixed; inset: 0; z-index: 40; background: rgba(5, 12, 16, 0.55); display: flex; align-items: flex-end; justify-content: center; }
+.sheet-box { background: var(--panel); border: 1px solid var(--line); width: 100%; max-width: 560px; max-height: 92%; overflow-y: auto; border-radius: 14px 14px 0 0; padding: 18px 16px calc(18px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 14px; }
+.sheet-box h2 { font-size: 18px; font-weight: 800; }
+@media (min-width: 700px) { .sheet { align-items: center; } .sheet-box { border-radius: 14px; } }
+#toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(86px + env(safe-area-inset-bottom, 0px)); z-index: 60; background: var(--ink); color: var(--bg); padding: 9px 14px; border-radius: 8px; font-size: 14px; max-width: calc(100% - 32px); }
+@media (min-width: 900px) { #toast { bottom: 28px; } }
+.gate { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: grid; place-items: center; padding: 16px; overflow-y: auto; }
+.gate-box { width: 100%; max-width: 380px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 22px 18px; display: flex; flex-direction: column; gap: 14px; }
+.gate-box h1 { font-size: 22px; font-weight: 800; }
+.gate-box .late { background: var(--bad-soft); padding: 8px 10px; border-radius: 8px; font-size: 14px; }
+.chk { display: flex; gap: 8px; align-items: flex-start; font-size: 13.5px; color: var(--muted); }
+.chk input { margin-top: 3px; }
+@media (prefers-reduced-motion: no-preference) { .bar-fill { transition: width 0.25s ease; } }
+</style>
+
+</head>
+<body>
+<div id="boot" class="gate"><p class="muted">Loading...</p></div>
+<div id="gate" class="gate" hidden>
+  <form id="gate-form" class="gate-box">
+    <h1>90-Day Outreach Tracker</h1>
+    <p class="muted" id="g-sub">Sign in to open your tracker.</p>
+    <label class="f">Username<input type="text" id="g-user" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
+    <label class="f">Password<input type="password" id="g-pass" name="password" autocomplete="current-password" required></label>
+    <label class="chk"><input type="checkbox" id="g-keep" checked><span>Keep me signed in on this device</span></label>
+    <p id="g-err" class="late" role="alert" hidden></p>
+    <button class="btn primary" type="submit" id="g-go">Sign in</button>
+  </form>
+</div>
+<div class="app" hidden>
+  <nav id="nav" aria-label="Sections"></nav>
+  <div class="col">
+    <header class="top">
+      <div>
+        <h1>90-Day Outreach Tracker</h1>
+        <p class="sub" id="phase">&nbsp;</p>
+      </div>
+      <div class="pills"><span class="pill" id="daypill">Day -</span><span class="pill dim" id="sync">Loading</span></div>
+    </header>
+    <main id="view" aria-live="polite"></main>
+  </div>
+</div>
+<div id="sheet" class="sheet" hidden></div>
+<div id="toast" role="status" hidden></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- constants ---------- */
+  var DEF = { startDate: '2026-10-12', floorTarget: 5 };
+  var STATUSES = ['New', 'Messaged', 'Replied', 'Call booked', 'Call done', 'Audit agreed', 'Audit delivered', 'Proposal sent', 'Won', 'Lost', 'Later'];
+  var TONE = { 'New': '', 'Messaged': 'info', 'Replied': 'info', 'Call booked': 'info', 'Call done': 'accent', 'Audit agreed': 'accent', 'Audit delivered': 'accent', 'Proposal sent': 'warn', 'Won': 'good', 'Lost': 'bad', 'Later': '' };
+  var AREAS = ['Outreach', 'ERP build', 'Client work', 'Admin', 'Learning'];
+  var SOURCES = ['Brother / CA network', 'Ex-colleague', 'LinkedIn', 'WhatsApp', 'Phone call', 'Referral', 'Other'];
+  var CONV = ['Call done', 'Audit agreed', 'Audit delivered', 'Proposal sent', 'Won'];
+  var AUDIT = ['Audit delivered', 'Proposal sent', 'Won'];
+  var WON = ['Won'];
+  var TARGETS = { msgs: [60, 180, 300], convs: [8, 20, 30], audits: [2, 5, 8], clients: [1, 2, 3], rev: [5000, 20000, 40000] };
+  var WEEK_GOAL = 30;
+  var COLS = ['contacts', 'tasks', 'days', 'ideas', 'prefs'];
+  var DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var TABS = [
+    ['today', 'Today', '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>'],
+    ['pipeline', 'Pipeline', '<path d="M4 6h16M4 12h11M4 18h6"/>'],
+    ['tasks', 'Tasks', '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-6"/>'],
+    ['progress', 'Progress', '<path d="M5 20V10M12 20V4M19 20v-7"/>'],
+    ['ideas', 'Parking lot', '<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>']
+  ];
+
+  /* ---------- helpers ---------- */
+  var $ = function (s) { return document.querySelector(s); };
+  var view = $('#view'), sheetEl = $('#sheet'), toastEl = $('#toast');
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var pad = function (n) { return String(n).padStart(2, '0'); };
+  var fmt = function (d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
+  var parse = function (s) { var p = s.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); };
+  var today = function () { return fmt(new Date()); };
+  var addDays = function (s, n) { var d = parse(s); d.setDate(d.getDate() + n); return fmt(d); };
+  var diff = function (a, b) { return Math.round((parse(a) - parse(b)) / 864e5); };
+  var nice = function (s) { var d = parse(s); return DOW[d.getDay()] + ' ' + d.getDate() + ' ' + MON[d.getMonth()]; };
+  var rupee = function (n) { return '₹' + Number(n || 0).toLocaleString('en-IN'); };
+  var uid = function () { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); };
+  var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+  var use = function (n) { try { return window.claude && window.claude.use ? window.claude.use(n) : Promise.resolve(null); } catch (e) { return Promise.resolve(null); } };
+  var lsGet = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  var lsSet = function (k, v) { try { localStorage.setItem(k, v); } catch (e) { /* storage may be blocked */ } };
+  var dueLabel = function (ds) { var t = today(), n = diff(ds, t); if (n === 0) return 'Today'; if (n === 1) return 'Tomorrow'; if (n < 0) return (-n) + 'd overdue'; return nice(ds); };
+
+  /* ---------- state ---------- */
+  var store = { contacts: {}, tasks: {}, days: {}, ideas: {}, prefs: {} };
+  var ui = { tab: 'today', filter: 'All', q: '', limit: 60, loaded: false, mode: 'pending', sync: 'idle' };
+  var base = null, pending = false, timers = {}, dirty = new Set(), delArm = null;
+
+  var S = function () { return Object.assign({}, DEF, store.prefs.main || {}); };
+
+  /* ---------- persistence ---------- */
+  function setSync(s) {
+    ui.sync = s;
+    var el = $('#sync');
+    var map = { synced: ['Synced', 'ok'], saving: ['Saving...', 'dim'], local: ['This device only', 'dim'], error: ['Not saved', 'err'], idle: ['Loading', 'dim'] };
+    var m = map[s] || map.idle;
+    el.textContent = m[0];
+    el.className = 'pill ' + m[1];
+  }
+  function lsLoad() {
+    try {
+      var raw = lsGet('outreach-tracker-v1');
+      if (raw) { var o = JSON.parse(raw); COLS.forEach(function (c) { store[c] = o[c] || {}; }); }
+    } catch (e) { /* ignore corrupt data */ }
+  }
+  function lsSave() { lsSet('outreach-tracker-v1', JSON.stringify(store)); }
+  function ref(col) { return base.collection(col); }
+
+  function save(col, id) {
+    var k = col + '/' + id;
+    dirty.add(k);
+    clearTimeout(timers[k]);
+    setSync(ui.mode === 'db' ? 'saving' : 'local');
+    timers[k] = setTimeout(function () { flush(col, id, 0); }, 350);
+  }
+  async function flush(col, id, tries) {
+    var k = col + '/' + id, data = store[col][id];
+    dirty.delete(k);
+    if (ui.mode !== 'db') { lsSave(); setSync('local'); return; }
+    try {
+      if (data === undefined) await ref(col).doc(id).delete();
+      else await ref(col).doc(id).set(data);
+      if (!dirty.size) setSync('synced');
+    } catch (e) {
+      if (e && e.code === 'unavailable' && tries < 1) { await sleep(800); return flush(col, id, tries + 1); }
+      setSync('error');
+      toast(e && (e.code === 'quota_exceeded' || e.code === 'resource-exhausted') ? 'Storage is full. Delete old items to add new ones.' : 'Could not save. Check your connection and try again.');
+    }
+  }
+  function put(col, id, data) { store[col][id] = data; save(col, id); }
+  function patch(col, id, p) { put(col, id, Object.assign({}, store[col][id] || {}, p)); }
+  function remove(col, id) { delete store[col][id]; save(col, id); }
+
+  function subscribe(col, onFirst) {
+    var first = true;
+    ref(col).onSnapshot(function (snap) {
+      var next = {};
+      snap.docs.forEach(function (d) { next[d.id] = d.data(); });
+      dirty.forEach(function (k) {
+        var parts = k.split('/');
+        if (parts[0] === col) { if (store[col][parts[1]] !== undefined) next[parts[1]] = store[col][parts[1]]; else delete next[parts[1]]; }
+      });
+      store[col] = next;
+      if (first) { first = false; onFirst(); } else render(false);
+    }, function (e) {
+      setSync('error');
+      if (e && e.code === 'permission-denied') toast('Access denied. Check your Firestore rules and user ID.');
+      if (first) { first = false; onFirst(); }
+    });
+  }
+
+  /* ---------- toast and sheet ---------- */
+  var toastTimer;
+  function toast(msg) {
+    toastEl.textContent = msg; toastEl.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.hidden = true; }, 2800);
+  }
+  function openSheet(html) {
+    sheetEl.innerHTML = '<div class="sheet-box" role="dialog" aria-modal="true">' + html + '</div>';
+    sheetEl.hidden = false;
+    var f = sheetEl.querySelector('input[type="text"], textarea');
+    if (f) f.focus();
+  }
+  function closeSheet() { sheetEl.hidden = true; sheetEl.innerHTML = ''; delArm = null; }
+
+  /* ---------- derived numbers ---------- */
+  function dayNo() { return diff(today(), S().startDate) + 1; }
+  function streak() {
+    var d = today(), tg = S().floorTarget, n = 0;
+    if (((store.days[d] || {}).msgs || 0) < tg) d = addDays(d, -1);
+    while (n < 400 && ((store.days[d] || {}).msgs || 0) >= tg) { n++; d = addDays(d, -1); }
+    return n;
+  }
+  function firstDate(c, set) {
+    var h = c.history || {}, best = null;
+    set.forEach(function (s) { if (h[s] && (best === null || h[s] < best)) best = h[s]; });
+    return best;
+  }
+  function metric(key, upTo) {
+    var lim = upTo || '9999-12-31', total = 0;
+    if (key === 'msgs') {
+      Object.keys(store.days).forEach(function (d) { if (d <= lim) total += store.days[d].msgs || 0; });
+      return total;
+    }
+    var set = key === 'convs' ? CONV : key === 'audits' ? AUDIT : WON;
+    Object.keys(store.contacts).forEach(function (id) {
+      var c = store.contacts[id], f = firstDate(c, set);
+      if (f && f <= lim) { total += key === 'rev' ? 0 : 1; }
+      if (key === 'rev') { var w = firstDate(c, WON); if (w && w <= lim) total += Number(c.value) || 0; }
+    });
+    return total;
+  }
+  function metricOf(key, upTo) { return key === 'clients' ? metric('won', upTo) : key === 'rev' ? metric('rev', upTo) : metric(key, upTo); }
+
+  /* ---------- views ---------- */
+  function statusChip(s) { return '<span class="st tone-' + (TONE[s] || 'none') + '">' + esc(s) + '</span>'; }
+
+  function viewToday() {
+    var s = S(), t = today(), d = store.days[t] || {}, msgs = d.msgs || 0, tg = s.floorTarget, met = msgs >= tg;
+    var pct = Math.min(100, Math.round(msgs / tg * 100));
+    var tm = addDays(t, 1), dtm = store.days[tm] || {};
+    var strip = '';
+    for (var i = 6; i >= 0; i--) {
+      var ds = addDays(t, -i), dd = store.days[ds] || {}, ok = (dd.msgs || 0) >= tg;
+      strip += '<div class="dstrip' + (ds === t ? ' is-today' : '') + '"><span class="dl">' + DOW[parse(ds).getDay()].slice(0, 2) + '</span><span class="dot' + (ok ? ' on' : '') + '">' + (dd.msgs || 0) + '</span><span class="dm">' + (dd.block > 0 ? dd.block + 'm' : '-') + '</span></div>';
+    }
+    var dueC = Object.keys(store.contacts).map(function (id) { return [id, store.contacts[id]]; }).filter(function (e) {
+      return e[1].nextDate && e[1].nextDate <= t && e[1].status !== 'Won' && e[1].status !== 'Lost';
+    }).sort(function (a, b) { return a[1].nextDate.localeCompare(b[1].nextDate); });
+    var dueT = Object.keys(store.tasks).map(function (id) { return [id, store.tasks[id]]; }).filter(function (e) {
+      return !e[1].done && e[1].due && e[1].due <= t;
+    }).sort(function (a, b) { return a[1].due.localeCompare(b[1].due); });
+    var cHtml = dueC.slice(0, 6).map(function (e) {
+      var c = e[1];
+      return '<div class="item"><div class="t"><strong>' + esc(c.company) + '</strong><span class="muted">' + esc(c.nextStep || 'Follow up') + ' &middot; <span class="' + (c.nextDate < t ? 'late' : '') + '">' + dueLabel(c.nextDate) + '</span></span></div>' +
+        '<div class="row"><button class="btn small primary" data-act="messaged" data-id="' + e[0] + '">Messaged</button><button class="btn small" data-act="editc" data-id="' + e[0] + '">Open</button></div></div>';
+    }).join('');
+    if (dueC.length > 6) cHtml += '<p class="muted">+' + (dueC.length - 6) + ' more in Pipeline</p>';
+    var tHtml = dueT.slice(0, 6).map(function (e) {
+      return '<div class="item"><div class="row" style="flex-wrap:nowrap;min-width:0"><button class="check" data-act="ttoggle" data-id="' + e[0] + '" aria-pressed="false" aria-label="Mark done"></button><div class="t"><strong>' + esc(e[1].title) + '</strong><span class="muted ' + (e[1].due < t ? 'late' : '') + '">' + dueLabel(e[1].due) + '</span></div></div></div>';
+    }).join('');
+    var blocks = [30, 60, 90].map(function (m) { return '<button class="btn small' + (d.block === m ? ' on' : '') + '" data-act="block" data-m="' + m + '" aria-pressed="' + (d.block === m) + '">' + m + ' min</button>'; }).join('');
+    return '<section class="card"><span class="lbl">Outreach floor &middot; ' + nice(t) + '</span>' +
+      '<div class="floor"><div class="bignum">' + msgs + '<small> / ' + tg + '</small></div><div class="bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="' + tg + '" aria-valuenow="' + Math.min(msgs, tg) + '"><div class="bar-fill' + (met ? ' met' : '') + '" style="width:' + pct + '%"></div></div>' +
+      '<div class="counter"><button class="btn" data-act="msg" data-n="-1" aria-label="One fewer message">&minus;</button><button class="btn primary" data-act="msg" data-n="1" aria-label="One more message">+1</button></div></div>' +
+      '<p class="muted">' + (met ? 'Floor met. Anything more today is a bonus.' : tg + ' messages or follow-ups, about 10 minutes on your phone. Tired days count too.') + ' Streak: <span class="mono">' + streak() + '</span> day' + (streak() === 1 ? '' : 's') + '.</p></section>' +
+      '<div class="grid2"><section class="card"><span class="lbl">Evening block</span><div class="row">' + blocks + '<button class="btn small" data-act="block" data-m="0">Skipped</button></div>' +
+      '<label class="f">Tonight\'s one task<input type="text" id="plan-today" data-chg="plan" data-date="' + t + '" value="' + esc(d.plan || '') + '" placeholder="e.g. Write the audit report for [company]"></label></section>' +
+      '<section class="card"><span class="lbl">Before you sleep</span><label class="f">Tomorrow\'s one task (' + nice(tm) + ')<input type="text" id="plan-tom" data-chg="plan" data-date="' + tm + '" value="' + esc(dtm.plan || '') + '" placeholder="Decide it tonight so you can start at once"></label></section></div>' +
+      '<section class="card"><span class="lbl">Last 7 days &middot; messages sent and evening minutes</span><div class="strip">' + strip + '</div></section>' +
+      '<div class="grid2"><section class="card"><h2>Follow-ups due</h2>' + (cHtml || '<p class="empty">Nothing due. Add a next date to a contact and it shows up here.</p>') + '</section>' +
+      '<section class="card"><h2>Tasks due</h2>' + (tHtml || '<p class="empty">No tasks due today.</p>') + '</section></div>';
+  }
+
+  function sortedContacts() {
+    var grp = function (s) { return s === 'Won' ? 1 : s === 'Later' ? 2 : s === 'Lost' ? 3 : 0; };
+    return Object.keys(store.contacts).map(function (id) { return [id, store.contacts[id]]; }).sort(function (a, b) {
+      var x = a[1], y = b[1], g = grp(x.status) - grp(y.status);
+      if (g) return g;
+      var da = x.nextDate || '9999', db = y.nextDate || '9999';
+      if (da !== db) return da.localeCompare(db);
+      return String(x.company).localeCompare(String(y.company));
+    });
+  }
+  function contactList() {
+    var all = sortedContacts();
+    if (!all.length) return '<div class="card"><p><strong>No contacts yet.</strong></p><p class="muted">Add one contact, or choose Paste list and drop in one line per company (company, person, industry). The tracker sorts them into tiers A, B and C using the rules in your roadmap.</p></div>';
+    var q = ui.q.trim().toLowerCase();
+    var list = all.filter(function (e) {
+      var c = e[1];
+      if (ui.filter !== 'All' && c.status !== ui.filter) return false;
+      if (!q) return true;
+      return [c.company, c.person, c.industry, c.notes].join(' ').toLowerCase().indexOf(q) >= 0;
+    });
+    if (!list.length) return '<p class="empty">Nothing matches this filter.</p>';
+    var t = today();
+    var html = list.slice(0, ui.limit).map(function (e) {
+      var c = e[1], id = e[0];
+      var opts = STATUSES.map(function (s) { return '<option' + (s === c.status ? ' selected' : '') + '>' + s + '</option>'; }).join('');
+      var sub = [c.person, c.industry, c.source].filter(Boolean).map(esc).join(' &middot; ');
+      var next = c.nextDate ? '<span class="cnext">Next: ' + esc(c.nextStep || 'Follow up') + ' &middot; <span class="' + (c.nextDate < t ? 'late' : '') + '">' + dueLabel(c.nextDate) + '</span></span>' : (c.lastContact ? '<span class="cnext">Last contact ' + nice(c.lastContact) + '</span>' : '');
+      var val = c.status === 'Won' && c.value ? '<span class="cnext">' + rupee(c.value) + '</span>' : '';
+      var canMsg = c.status === 'New' || c.status === 'Messaged';
+      return '<article class="contact"><div class="cmain"><div class="ctitle"><strong>' + esc(c.company) + '</strong><span class="tier ' + esc(c.tier) + '">' + esc(c.tier || '-') + '</span></div>' +
+        (sub ? '<span class="csub">' + sub + '</span>' : '') + next + val + '</div>' +
+        '<div class="cside"><select data-chg="cstatus" data-id="' + id + '" aria-label="Status for ' + esc(c.company) + '">' + opts + '</select>' +
+        (canMsg ? '<button class="btn small primary" data-act="messaged" data-id="' + id + '">Messaged</button>' : '') +
+        '<button class="btn small" data-act="editc" data-id="' + id + '">Edit</button></div></article>';
+    }).join('');
+    if (list.length > ui.limit) html += '<button class="btn" data-act="more">Show more (' + (list.length - ui.limit) + ' left)</button>';
+    return html;
+  }
+  function viewPipeline() {
+    var counts = {}, total = 0;
+    Object.keys(store.contacts).forEach(function (id) { var s = store.contacts[id].status; counts[s] = (counts[s] || 0) + 1; total++; });
+    var chips = '<button data-act="filter" data-f="All" aria-pressed="' + (ui.filter === 'All') + '">All<span class="n">' + total + '</span></button>' +
+      STATUSES.filter(function (s) { return counts[s] || ui.filter === s; }).map(function (s) {
+        return '<button data-act="filter" data-f="' + s + '" aria-pressed="' + (ui.filter === s) + '">' + s + '<span class="n">' + (counts[s] || 0) + '</span></button>';
+      }).join('');
+    return '<div class="vh"><h2>Pipeline</h2><div class="row"><button class="btn" data-act="import">Paste list</button><button class="btn primary" data-act="newc">Add contact</button></div></div>' +
+      '<input type="search" id="q" placeholder="Search company, person, industry" value="' + esc(ui.q) + '" aria-label="Search contacts">' +
+      '<div class="chips">' + chips + '</div><div id="clist" style="display:flex;flex-direction:column;gap:10px">' + contactList() + '</div>';
+  }
+
+  function taskRow(id, x) {
+    var t = today();
+    return '<li class="task' + (x.done ? ' done' : '') + '"><button class="check" data-act="ttoggle" data-id="' + id + '" aria-pressed="' + (!!x.done) + '" aria-label="' + (x.done ? 'Mark not done' : 'Mark done') + '"></button>' +
+      '<div class="tmain"><span class="ttitle">' + esc(x.title) + '</span><span class="tmeta">' + (x.area ? '<span class="tag">' + esc(x.area) + '</span>' : '') + (x.due ? '<span class="' + (x.due < t && !x.done ? 'late' : '') + '">' + dueLabel(x.due) + '</span>' : '') + '</span></div>' +
+      '<button class="x" data-act="tdel" data-id="' + id + '" aria-label="Delete task">&times;</button></li>';
+  }
+  function viewTasks() {
+    var t = today(), all = Object.keys(store.tasks).map(function (id) { return [id, store.tasks[id]]; });
+    var open = all.filter(function (e) { return !e[1].done; }).sort(function (a, b) { return (a[1].due || '9999').localeCompare(b[1].due || '9999') || (a[1].created || 0) - (b[1].created || 0); });
+    var done = all.filter(function (e) { return e[1].done; }).sort(function (a, b) { return (b[1].doneAt || 0) - (a[1].doneAt || 0); }).slice(0, 15);
+    var now = open.filter(function (e) { return e[1].due && e[1].due <= t; });
+    var soon = open.filter(function (e) { return e[1].due && e[1].due > t; });
+    var none = open.filter(function (e) { return !e[1].due; });
+    var group = function (title, arr) { return arr.length ? '<section class="card"><h2>' + title + ' <span class="muted mono">' + arr.length + '</span></h2><ul class="tasklist">' + arr.map(function (e) { return taskRow(e[0], e[1]); }).join('') + '</ul></section>' : ''; };
+    var areaOpts = AREAS.map(function (a) { return '<option>' + a + '</option>'; }).join('');
+    var empty = !all.length ? '<div class="card"><p><strong>No tasks yet.</strong></p><p class="muted">Add your own above, or start with the week 1 tasks from your roadmap.</p><div><button class="btn primary" data-act="seedtasks">Add week 1 tasks</button></div></div>' : '';
+    return '<div class="vh"><h2>Tasks</h2></div>' +
+      '<form class="card" data-form="task"><div class="addrow"><input type="text" name="title" placeholder="New task" aria-label="Task" required><select name="area" aria-label="Area">' + areaOpts + '</select><input type="date" name="due" aria-label="Due date"><button class="btn primary" type="submit">Add</button></div></form>' +
+      empty + group('Due now', now) + group('Upcoming', soon) + group('No date', none) +
+      (done.length ? '<section class="card"><details><summary>Done (' + done.length + ')</summary><ul class="tasklist">' + done.map(function (e) { return taskRow(e[0], e[1]); }).join('') + '</ul></details></section>' : '');
+  }
+
+  function weekChart() {
+    var s = S(), w = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    Object.keys(store.days).forEach(function (d) { var i = Math.floor(diff(d, s.startDate) / 7); if (i >= 0 && i < 12) w[i] += store.days[d].msgs || 0; });
+    var max = Math.max.apply(null, w.concat([WEEK_GOAL])) * 1.12, X0 = 30, X1 = 352, Y0 = 18, Y1 = 156, sw = (X1 - X0) / 12, bw = sw * 0.62;
+    var y = function (v) { return Y1 - (v / max) * (Y1 - Y0); };
+    var bars = '', lab = '';
+    w.forEach(function (v, i) {
+      var x = X0 + i * sw + (sw - bw) / 2, cx = X0 + i * sw + sw / 2;
+      bars += v > 0 ? '<rect class="bar" x="' + x.toFixed(1) + '" y="' + y(v).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (Y1 - y(v)).toFixed(1) + '" rx="2"/>' : '<rect class="bar0" x="' + x.toFixed(1) + '" y="' + (Y1 - 2) + '" width="' + bw.toFixed(1) + '" height="2"/>';
+      lab += '<text class="ax" x="' + cx.toFixed(1) + '" y="174" text-anchor="middle">' + (i + 1) + '</text>';
+      if (v > 0) lab += '<text class="val" x="' + cx.toFixed(1) + '" y="' + (y(v) - 4).toFixed(1) + '" text-anchor="middle">' + v + '</text>';
+    });
+    var gy = y(WEEK_GOAL);
+    return '<svg class="chart" viewBox="0 0 360 184" role="img" aria-label="Messages sent in each of the 12 weeks, against a goal of ' + WEEK_GOAL + ' a week"><line class="axis" x1="' + X0 + '" x2="' + X1 + '" y1="' + Y1 + '" y2="' + Y1 + '"/><line class="goal" x1="' + X0 + '" x2="' + X1 + '" y1="' + gy.toFixed(1) + '" y2="' + gy.toFixed(1) + '"/>' + bars + lab +
+      '<text class="ax" x="' + (X0 - 4) + '" y="' + (Y1 + 3) + '" text-anchor="end">0</text><text class="ax" x="' + (X0 - 4) + '" y="' + (gy + 3).toFixed(1) + '" text-anchor="end">' + WEEK_GOAL + '</text></svg>';
+  }
+  function advice() {
+    var n = dayNo(), s = S();
+    if (n < 1) return 'Your plan starts on ' + nice(s.startDate) + '. Until then, load your contact list and tier it.';
+    var convs = metricOf('convs'), audits = metricOf('audits'), clients = metricOf('clients');
+    if (n >= 90) {
+      if (clients >= 2) return 'Day 90 rule: 2 or more paying clients. Continue, double down on the niche that sold, and plan the next 90 days.';
+      if (clients === 1) return 'Day 90 rule: 1 paying client. Run one more 90-day cycle in the same niche.';
+      if (convs >= 25) return 'Day 90 rule: no paying clients after 25 or more conversations. Change the niche or the offer, using what owners told you.';
+      return 'Day 90 reached with fewer than 25 conversations. The problem is outreach volume, so keep the same offer and keep the floor.';
+    }
+    if (n >= 60 && convs >= 15 && audits === 0) return 'Day 60 rule: 15 or more conversations and no audit yet. Re-read your call notes and rewrite the offer around the pain owners repeat.';
+    if (n >= 30 && n < 60 && convs < 5) return 'Day 30 rule: fewer than 5 conversations. The problem is outreach. Change the message, the list quality or the channel, not the business.';
+    return 'No rule is triggered yet. Keep the floor and keep the next conversation booked.';
+  }
+  function viewProgress() {
+    var s = S(), t = today(), rows = [['msgs', 'Messages sent'], ['convs', 'Conversations held'], ['audits', 'Audits delivered'], ['clients', 'Paying clients'], ['rev', 'Revenue']];
+    var cps = [29, 59, 89].map(function (o) { return addDays(s.startDate, o); });
+    var head = '<tr><th>Metric</th><th class="num">Now</th>' + cps.map(function (d, i) { return '<th class="num">Day ' + (i + 1) * 30 + '<small>' + nice(d) + '</small></th>'; }).join('') + '</tr>';
+    var body = rows.map(function (r) {
+      var k = r[0], f = function (v) { return k === 'rev' ? rupee(v) : v; };
+      var cells = cps.map(function (d, i) {
+        var tg = TARGETS[k][i], passed = t >= d, got = passed ? metricOf(k, d) : null;
+        return '<td class="num">' + f(tg) + (passed ? '<small class="' + (got >= tg ? 'got-good' : 'got-bad') + '">got ' + f(got) + '</small>' : '') + '</td>';
+      }).join('');
+      return '<tr><td>' + r[1] + '</td><td class="num"><strong>' + f(metricOf(k)) + '</strong></td>' + cells + '</tr>';
+    }).join('');
+    return '<div class="vh"><h2>Progress</h2></div><section class="card"><span class="lbl">What the numbers say</span><p class="note">' + esc(advice()) + '</p></section>' +
+      '<section class="card"><h2>Targets and actuals</h2><div class="scroll"><table><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div><p class="muted">Targets are starting guesses from your roadmap. "Got" is your cumulative total on that day.</p></section>' +
+      '<section class="card"><h2>Messages per week</h2>' + weekChart() + '<p class="muted">Weeks since ' + nice(s.startDate) + '. Dashed line is the goal of ' + WEEK_GOAL + ' a week.</p></section>' +
+      '<section class="card"><h2>Plan settings</h2><div class="fgrid"><label class="f">Start date (day 1)<input type="date" id="set-start" data-chg="setting" data-key="startDate" value="' + esc(s.startDate) + '"></label><label class="f">Daily outreach floor<input type="number" id="set-floor" min="1" max="50" data-chg="setting" data-key="floorTarget" value="' + esc(s.floorTarget) + '"></label></div><div class="row"><button class="btn" data-act="backup">Download backup</button><button class="btn" data-act="restore">Restore backup</button><input type="file" id="restore-file" accept="application/json" hidden><button class="btn" data-act="signout">Sign out</button></div><p class="muted">Your data is stored in your Firebase account and syncs to every device you sign in on. Backups are optional. Restore adds the items from a backup file.</p></section>';
+  }
+
+  function viewIdeas() {
+    var s = S(), list = Object.keys(store.ideas).map(function (id) { return [id, store.ideas[id]]; }).sort(function (a, b) { return (b[1].created || 0) - (a[1].created || 0); });
+    return '<div class="vh"><h2>Parking lot</h2></div><section class="card"><p class="muted">New business ideas go here, not into this week\'s plan. Open this list again on ' + nice(addDays(s.startDate, 89)) + '.</p>' +
+      '<form data-form="idea" class="row" style="flex-wrap:nowrap"><input type="text" name="text" placeholder="Write the idea in one line" aria-label="Idea" required><button class="btn primary" type="submit">Park it</button></form></section>' +
+      (list.length ? '<section class="card"><ul class="tasklist">' + list.map(function (e) {
+        return '<li class="task"><div class="tmain"><span class="ttitle">' + esc(e[1].text) + '</span><span class="tmeta">' + nice(fmt(new Date(e[1].created || Date.now()))) + '</span></div><button class="x" data-act="idel" data-id="' + e[0] + '" aria-label="Delete idea">&times;</button></li>';
+      }).join('') + '</ul></section>' : '<p class="empty">Nothing parked yet.</p>');
+  }
+  var VIEWS = { today: viewToday, pipeline: viewPipeline, tasks: viewTasks, progress: viewProgress, ideas: viewIdeas };
+
+  /* ---------- render ---------- */
+  function renderNav() {
+    $('#nav').innerHTML = TABS.map(function (t) {
+      return '<button data-act="tab" data-tab="' + t[0] + '"' + (ui.tab === t[0] ? ' aria-current="page"' : '') + '><svg viewBox="0 0 24 24" aria-hidden="true">' + t[2] + '</svg><span>' + t[1] + '</span></button>';
+    }).join('');
+  }
+  function renderHead() {
+    var n = dayNo(), s = S();
+    $('#daypill').textContent = n < 1 ? 'Starts ' + nice(s.startDate) : n > 90 ? 'Day 90 passed' : 'Day ' + n + ' of 90';
+    $('#phase').textContent = n < 1 ? 'Get the list ready before day 1' : n > 90 ? 'Time for the day 90 review' : 'Week ' + Math.ceil(n / 7) + ' of 13 · outreach first, building second';
+  }
+  function render(force) {
+    var a = document.activeElement;
+    if (!force && a && view.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) { pending = true; return; }
+    pending = false;
+    renderNav(); renderHead();
+    view.innerHTML = ui.loaded ? VIEWS[ui.tab]() : '<p class="muted pad">Loading your tracker...</p>';
+  }
+  view.addEventListener('focusout', function () {
+    if (pending) setTimeout(function () { if (!view.contains(document.activeElement)) render(true); }, 60);
+  });
+
+  /* ---------- actions ---------- */
+  function bumpMsgs(n) {
+    var t = today(), d = store.days[t] || {};
+    patch('days', t, { msgs: Math.max(0, (d.msgs || 0) + n) });
+  }
+  function markMessaged(id) {
+    var c = store.contacts[id]; if (!c) return;
+    var t = today(), st = c.status === 'New' ? 'Messaged' : c.status, h = Object.assign({}, c.history || {});
+    h[st] = h[st] || t;
+    var p = { status: st, history: h, lastContact: t };
+    if (st === 'Messaged' || st === 'New') { p.nextDate = addDays(t, 3); p.nextStep = c.nextStep || 'Follow up'; }
+    else if (c.nextDate && c.nextDate <= t) { p.nextDate = addDays(t, 3); }
+    patch('contacts', id, p);
+    bumpMsgs(1);
+    toast('Logged. Next follow-up ' + nice(p.nextDate || c.nextDate || addDays(t, 3)) + '.');
+  }
+  function setStatus(id, st) {
+    var c = store.contacts[id]; if (!c) return;
+    var t = today(), h = Object.assign({}, c.history || {});
+    h[st] = t;
+    var p = { status: st, history: h, lastContact: t };
+    if (st === 'Won' || st === 'Lost') p.nextDate = '';
+    if (st === 'Messaged' && !c.nextDate) p.nextDate = addDays(t, 3);
+    patch('contacts', id, p);
+    if (st === 'Won') { render(true); contactSheet(id, 'Add the deal value for this client.'); return; }
+    render(true);
+  }
+  function tierFor(industry) {
+    return /pack|plastic|film|polymer|electronic|component|pcb|label|laminat/i.test(industry || '') ? 'A' : 'B';
+  }
+
+  function contactSheet(id, hint) {
+    var c = id ? store.contacts[id] : null, t = today();
+    var v = function (k, d) { return esc(c && c[k] != null ? c[k] : (d || '')); };
+    var sel = function (list, cur) { return list.map(function (o) { return '<option' + (o === cur ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join(''); };
+    openSheet('<h2>' + (c ? 'Edit contact' : 'Add contact') + '</h2>' + (hint ? '<p class="note">' + esc(hint) + '</p>' : '') +
+      '<form data-form="contact" data-id="' + (id || '') + '" style="display:flex;flex-direction:column;gap:12px">' +
+      '<label class="f">Company<input type="text" name="company" required value="' + v('company') + '"></label>' +
+      '<div class="fgrid"><label class="f">Person<input type="text" name="person" value="' + v('person') + '"></label><label class="f">Industry<input type="text" name="industry" value="' + v('industry') + '"></label></div>' +
+      '<div class="fgrid"><label class="f">Tier<select name="tier">' + sel(['A', 'B', 'C'], c ? c.tier : 'A') + '</select></label><label class="f">Source<select name="source">' + sel(SOURCES, c ? c.source : SOURCES[0]) + '</select></label></div>' +
+      '<label class="f">Phone, WhatsApp or LinkedIn<input type="text" name="reach" value="' + v('reach') + '"></label>' +
+      '<div class="fgrid"><label class="f">Status<select name="status">' + sel(STATUSES, c ? c.status : 'New') + '</select></label><label class="f">Deal value (INR)<input type="number" name="value" min="0" step="500" value="' + v('value') + '"></label></div>' +
+      '<div class="fgrid"><label class="f">Next step<input type="text" name="nextStep" value="' + v('nextStep') + '"></label><label class="f">Next date<input type="date" name="nextDate" value="' + v('nextDate') + '"></label></div>' +
+      '<label class="f">Notes<textarea name="notes">' + v('notes') + '</textarea></label>' +
+      '<div class="row"><button class="btn primary" type="submit">Save</button><button class="btn" type="button" data-act="close">Cancel</button>' + (c ? '<button class="btn danger" type="button" data-act="delc" data-id="' + id + '">Delete</button>' : '') + '</div></form>');
+  }
+  function importSheet() {
+    openSheet('<h2>Paste your contact list</h2><p class="muted">One company per line: company, person, industry, phone or LinkedIn. Tabs from Excel or Google Sheets work too. Only the company is required.</p>' +
+      '<form data-form="import" style="display:flex;flex-direction:column;gap:12px"><label class="f">List<textarea name="list" style="min-height:160px" placeholder="Shree Packaging, Mr. Shah, Plastic film, 98xxxxxxxx"></textarea></label>' +
+      '<label class="f">Where did this list come from?<select name="source">' + SOURCES.map(function (o) { return '<option>' + o + '</option>'; }).join('') + '</select></label>' +
+      '<p class="muted" id="imp-msg">Packaging, plastics and electronics go to tier A, everything else to tier B. You can change a tier any time.</p>' +
+      '<div class="row"><button class="btn primary" type="submit" id="imp-go">Import</button><button class="btn" type="button" data-act="close">Cancel</button></div></form>');
+  }
+  async function doImport(form) {
+    var fd = new FormData(form), lines = String(fd.get('list') || '').split(/\r?\n/).map(function (l) { return l.trim(); }).filter(Boolean);
+    if (lines.length && /^company/i.test(lines[0])) lines.shift();
+    var seen = {};
+    Object.keys(store.contacts).forEach(function (id) { var c = store.contacts[id]; seen[(c.company + '|' + (c.person || '')).toLowerCase()] = 1; });
+    var go = $('#imp-go'), msg = $('#imp-msg'), n = 0, skipped = 0;
+    if (!lines.length) { msg.textContent = 'Paste at least one line.'; return; }
+    go.disabled = true;
+    for (var i = 0; i < lines.length; i++) {
+      var cols = (lines[i].indexOf('\t') >= 0 ? lines[i].split('\t') : lines[i].split(',')).map(function (x) { return x.trim(); });
+      if (!cols[0]) continue;
+      var key = (cols[0] + '|' + (cols[1] || '')).toLowerCase();
+      if (seen[key]) { skipped++; continue; }
+      seen[key] = 1;
+      var id = uid();
+      store.contacts[id] = { company: cols[0], person: cols[1] || '', industry: cols[2] || '', reach: cols[3] || '', tier: tierFor(cols[2]), source: fd.get('source'), status: 'New', history: {}, nextStep: '', nextDate: '', notes: '', created: Date.now() };
+      await flush('contacts', id, 0);
+      n++;
+      if (n % 5 === 0) { msg.textContent = 'Importing ' + n + ' of ' + lines.length + '...'; await sleep(60); }
+    }
+    closeSheet(); render(true);
+    toast('Imported ' + n + ' contact' + (n === 1 ? '' : 's') + (skipped ? ', skipped ' + skipped + ' duplicates.' : '.'));
+  }
+
+  function seedTasks() {
+    var s = S(), st = s.startDate, due = function (n) { return addDays(st, n); };
+    [
+      ['Move the contact list into the Pipeline and tier it', 'Outreach', 1],
+      ['Ask my brother for 3 introductions', 'Outreach', 1],
+      ['Check my job contract for rules on outside work', 'Admin', 2],
+      ['Write the one-page process audit offer', 'Client work', 4],
+      ['Prepare 2 anonymised case studies from past ERP work', 'Client work', 6],
+      ['Write discovery call questions and a sample audit report', 'Client work', 8]
+    ].forEach(function (x, i) { put('tasks', uid() + i, { title: x[0], area: x[1], due: due(x[2]), done: false, created: Date.now() + i }); });
+    render(true); toast('Week 1 tasks added.');
+  }
+
+  function act(a, el) {
+    var d = el.dataset;
+    switch (a) {
+      case 'tab': ui.tab = d.tab; lsSet('outreach-tab', ui.tab); render(true); window.scrollTo(0, 0); break;
+      case 'msg': bumpMsgs(Number(d.n)); render(true); break;
+      case 'block': patch('days', today(), { block: Number(d.m) }); render(true); break;
+      case 'messaged': markMessaged(d.id); render(true); break;
+      case 'editc': contactSheet(d.id); break;
+      case 'newc': contactSheet(null); break;
+      case 'import': importSheet(); break;
+      case 'close': closeSheet(); break;
+      case 'delc':
+        if (delArm !== d.id) { delArm = d.id; el.textContent = 'Tap again to delete'; }
+        else { remove('contacts', d.id); closeSheet(); render(true); toast('Contact deleted.'); }
+        break;
+      case 'filter': ui.filter = d.f; ui.limit = 60; render(true); break;
+      case 'more': ui.limit += 60; $('#clist').innerHTML = contactList(); break;
+      case 'ttoggle': var x = store.tasks[d.id]; if (x) { patch('tasks', d.id, { done: !x.done, doneAt: !x.done ? Date.now() : 0 }); render(true); } break;
+      case 'tdel': remove('tasks', d.id); render(true); break;
+      case 'idel': remove('ideas', d.id); render(true); break;
+      case 'seedtasks': seedTasks(); break;
+      case 'backup':
+        var blob = new Blob([JSON.stringify(store)], { type: 'application/json' }), a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = 'outreach-tracker-backup-' + today() + '.json';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+        break;
+      case 'restore': $('#restore-file').click(); break;
+      case 'signout':
+        firebase.auth().signOut().then(function () { location.reload(); });
+        break;
+    }
+  }
+
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-act]');
+    if (el) { act(el.dataset.act, el); return; }
+    if (e.target === sheetEl) closeSheet();
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !sheetEl.hidden) closeSheet(); });
+  document.addEventListener('input', function (e) {
+    if (e.target.id === 'q') { ui.q = e.target.value; ui.limit = 60; var l = $('#clist'); if (l) l.innerHTML = contactList(); }
+  });
+  document.addEventListener('change', function (e) {
+    if (e.target.id === 'restore-file') {
+      var file = e.target.files && e.target.files[0];
+      if (!file) return;
+      var fr = new FileReader();
+      fr.onload = async function () {
+        try {
+          var o = JSON.parse(String(fr.result)), n = 0;
+          for (var ci = 0; ci < COLS.length; ci++) {
+            var col = COLS[ci], items = o[col] || {};
+            for (var rid in items) {
+              if (items[rid] && typeof items[rid] === 'object') { store[col][rid] = items[rid]; await flush(col, rid, 0); n++; }
+            }
+          }
+          render(true); toast('Restored ' + n + ' items.');
+        } catch (x) { toast('That file is not a valid backup.'); }
+      };
+      fr.readAsText(file);
+      e.target.value = '';
+      return;
+    }
+    var el = e.target, k = el.dataset && el.dataset.chg;
+    if (!k) return;
+    if (k === 'cstatus') setStatus(el.dataset.id, el.value);
+    else if (k === 'plan') { patch('days', el.dataset.date, { plan: el.value.trim() }); render(false); }
+    else if (k === 'setting') {
+      var val = el.dataset.key === 'floorTarget' ? Math.max(1, Math.min(50, Number(el.value) || DEF.floorTarget)) : el.value;
+      if (!val) return;
+      put('prefs', 'main', Object.assign({}, store.prefs.main || {}, (function (o) { o[el.dataset.key] = val; return o; })({})));
+      render(true);
+    }
+  });
+  document.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var f = e.target, kind = f.dataset.form, fd = new FormData(f);
+    if (kind === 'task') {
+      var title = String(fd.get('title') || '').trim(); if (!title) return;
+      put('tasks', uid(), { title: title, area: fd.get('area'), due: fd.get('due') || '', done: false, created: Date.now() });
+      render(true);
+    } else if (kind === 'idea') {
+      var text = String(fd.get('text') || '').trim(); if (!text) return;
+      put('ideas', uid(), { text: text, created: Date.now() });
+      render(true); toast('Parked. Back to the floor.');
+    } else if (kind === 'contact') {
+      var id = f.dataset.id, old = id ? store.contacts[id] : null, t = today();
+      var h = Object.assign({}, old && old.history || {}), st = fd.get('status');
+      if (!old || old.status !== st) h[st] = t;
+      put('contacts', id || uid(), {
+        company: String(fd.get('company')).trim(), person: String(fd.get('person')).trim(), industry: String(fd.get('industry')).trim(),
+        tier: fd.get('tier'), source: fd.get('source'), reach: String(fd.get('reach')).trim(), status: st, history: h,
+        value: Number(fd.get('value')) || 0, nextStep: String(fd.get('nextStep')).trim(), nextDate: fd.get('nextDate') || '',
+        notes: String(fd.get('notes')).trim(), lastContact: old && old.lastContact || '', created: old && old.created || Date.now()
+      });
+      closeSheet(); render(true); toast('Contact saved.');
+    } else if (kind === 'import') { doImport(f); }
+  });
+
+  /* ---------- start ---------- */
+  function authMessage(code) {
+    if (code === 'auth/too-many-requests') return 'Too many attempts. Wait a few minutes and try again.';
+    if (code === 'auth/network-request-failed') return 'No connection. Check your internet and try again.';
+    if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found' || code === 'auth/invalid-email' || code === 'auth/invalid-login-credentials') return 'Wrong username or password.';
+    return 'Could not sign in (' + (code || 'unknown error') + ').';
+  }
+  async function init() {
+    ui.tab = lsGet('outreach-tab') || 'today';
+    if (!VIEWS[ui.tab]) ui.tab = 'today';
+    var cfg = window.FIREBASE_CONFIG, boot = $('#boot'), gate = $('#gate'), app = document.querySelector('.app'), err = $('#g-err');
+    var ready = window.firebase && cfg && cfg.apiKey && cfg.apiKey.indexOf('PASTE') !== 0 && cfg.projectId && cfg.projectId.indexOf('PASTE') !== 0;
+    if (!ready) {
+      boot.hidden = true; gate.hidden = false;
+      $('#g-sub').textContent = 'Setup needed: add your Firebase settings to firebase-config.js (see the README).';
+      Array.prototype.forEach.call($('#gate-form').querySelectorAll('input, button'), function (el) { el.disabled = true; });
+      return;
+    }
+    firebase.initializeApp(cfg);
+    var auth = firebase.auth(), fs = firebase.firestore();
+    try { await fs.enablePersistence({ synchronizeTabs: true }); } catch (e) { /* offline cache unsupported here; sync still works online */ }
+    var DOMAIN = cfg.loginDomain || 'outreach-tracker.app', started = false;
+    render(true);
+    auth.onAuthStateChanged(function (user) {
+      boot.hidden = true;
+      if (!user) { app.hidden = true; gate.hidden = false; return; }
+      gate.hidden = true; app.hidden = false;
+      if (started) return;
+      started = true;
+      ui.mode = 'db';
+      base = fs.collection('users').doc(user.uid);
+      var got = 0;
+      var done = function () { got++; if (got === COLS.length && !ui.loaded) { ui.loaded = true; setSync('synced'); render(true); } };
+      COLS.forEach(function (c) { subscribe(c, done); });
+      setTimeout(function () { if (!ui.loaded) { ui.loaded = true; render(true); } }, 6000);
+    });
+    $('#gate-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var go = $('#g-go'), u = $('#g-user').value.trim().toLowerCase(), p = $('#g-pass').value.replace(/[‘’ʼ`]/g, "'").trim();
+      var email = u.indexOf('@') > 0 ? u : u + '@' + DOMAIN;
+      err.hidden = true; go.disabled = true; go.textContent = 'Signing in...';
+      try {
+        await auth.setPersistence($('#g-keep').checked ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION);
+        await auth.signInWithEmailAndPassword(email, p);
+      } catch (x) { err.textContent = authMessage(x && x.code); err.hidden = false; }
+      go.disabled = false; go.textContent = 'Sign in';
+    });
+  }
+  init();
+})();
+</script>
+</body>
+</html>
